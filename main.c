@@ -19,7 +19,7 @@
 char ** parseLine(char * line) {
     // use example from internet but without the extra stuff
     // make sure to check for space skips
-    printf("%s", line);
+    // printf("%s", line);
 
     char * delim = " \n";
     size_t count = 0;
@@ -32,7 +32,7 @@ char ** parseLine(char * line) {
         }
         tmp++;
     }
-    printf("Count: %d\n", count);
+    // printf("Count: %d\n", count);
 
     result = malloc(sizeof(char *) * count);
 
@@ -42,14 +42,13 @@ char ** parseLine(char * line) {
 
         while (token) {
             assert(idx < count);
-            *(result + idx) = strdup(token);
-            *(result + idx) = strdup(token);
-            *(result + idx) = strdup(token);
-            printf("%s-", *(result + idx));
+            *(result + idx) = malloc(strlen(token) + 1);
+            strcpy(*(result + idx), token);
+            // printf("%s-", *(result + idx));
             idx++;
             token = strtok(0, delim);
         }
-        printf("\n");
+        // printf("\n");
         assert(idx == count);
         *(result + idx) = 0;
     }
@@ -83,26 +82,20 @@ int main(int argc, char * argv[]) {
         // printf("%s", line);
         char ** tokens = parseLine(line);
         tokens += 2;
-        printf("First mem: %s\n", *tokens);
+        // printf("First mem: %s\n", *tokens);
         while (*tokens) {
-            // printf("%s+", *tokens);
-            // strdup token to paTable
-            *(paTable + paTableIdx) = strdup(*tokens);
-            // *(paTable + paTableIdx) = strdup(*tokens);
-            // *(paTable + paTableIdx) = strdup(*tokens);
-            // *(paTable + paTableIdx) = malloc(sizeof(char) * 3);
-            // strncpy(*(paTable + paTableIdx), *tokens, 3);
-            // *(paTable + paTableIdx)[2] = '\0';
-            printf("%s-", *(paTable + paTableIdx));
+            *(paTable + paTableIdx) = malloc(strlen(*tokens) + 1);
+            strcpy(*(paTable + paTableIdx), *tokens);
+            // printf("%s-", *(paTable + paTableIdx));
             paTableIdx++;
             tokens++;
         }
-        printf("\n");
+        // printf("\n");
     }
     assert(paTableIdx == NUM_OF_ENTRIES * NUM_OF_PAGES);
 
-    /*
     size_t i = 0;
+    /*
     char ** tempp = paTable;
     while (*tempp) {
         if (i % NUM_OF_ENTRIES == 0) {
@@ -113,6 +106,13 @@ int main(int argc, char * argv[]) {
         tempp++;
     }
      */
+    while (i < NUM_OF_ENTRIES * NUM_OF_PAGES) {
+        if (i % NUM_OF_ENTRIES == 0) {
+            printf("\n");
+        }
+        printf("%s ", *(paTable + i));
+        i++;
+    }
 
     fclose(fp);
 
