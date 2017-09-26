@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 /* Error status */
 #define INCORRECT_USAGE -1
@@ -16,39 +17,69 @@
 #define NUM_OF_PAGES 128
 #define NUM_OF_ENTRIES 32
 
-char ** parseLine(char * line) {
-    // use example from internet but without the extra stuff
-    // make sure to check for space skips
-    // printf("%s", line);
-
-    char * delim = " \n";
-    size_t count = 0;
+/*
+void lineAnalyzer(char * line) {
     char * tmp = line;
-    char ** result = 0;
-
+    size_t valueStart = 0;
+    size_t i = 0;
     while (*tmp) {
-        if (*tmp == *delim && *(tmp + 1) != ' ') {
+        printf("%c", *tmp);
+        if (*tmp == ':') {
+            valueStart = i + 2;
+        }
+        i++;
+        tmp++;
+    }
+
+    tmp = line + 10;
+    int count = 0;
+    while (*tmp) {
+        if (isspace(*tmp)) {
             count++;
         }
         tmp++;
     }
-    // printf("Count: %d\n", count);
+
+    printf("Count: %d\n", count);
+    printf("Value start: %d\n", valueStart);
+}
+ */
+
+char ** parseLine(char * line) {
+    printf("%s", line);
+
+    // char * delim = " \n";
+    char * delim = " \n";
+    int count = 0;
+    char * tmp = line;
+    char ** result = 0;
+
+    while (*tmp) {
+        // printf("%c", *tmp);
+        // if (*tmp == ' ' && *(tmp + 1) != ' ') {
+        if (isspace(*tmp) && !isspace(*(tmp + 1)) ) {
+            count++;
+        }
+        tmp++;
+    }
+    printf("Count: %d\n", count);
 
     result = malloc(sizeof(char *) * count);
 
+    tmp = line;
     if (result) {
         size_t idx  = 0;
-        char * token = strtok(line, delim);
+        char * token = strtok(tmp, delim);
 
         while (token) {
             assert(idx < count);
             *(result + idx) = malloc(strlen(token) + 1);
             strcpy(*(result + idx), token);
-            // printf("%s-", *(result + idx));
+            printf("%s-", *(result + idx));
             idx++;
             token = strtok(0, delim);
         }
-        // printf("\n");
+        printf("\n");
         assert(idx == count);
         *(result + idx) = 0;
     }
@@ -76,10 +107,14 @@ int main(int argc, char * argv[]) {
     // check if paTable is null..?
     int paTableIdx  = 0;
 
-    char * line = NULL;
-    size_t len = 0;
-    while (getline(&line, &len, fp) != -1) {
+    int lineLen = 108;
+    char line[108];
+    while(fgets(line, sizeof(line), fp) != NULL) {
+    // char * line = NULL;
+    // size_t len = 0;
+    // while (getline(&line, &len, fp) != -1) {
         // printf("%s", line);
+        // lineAnalyzer(line);
         char ** tokens = parseLine(line);
         tokens += 2;
         // printf("First mem: %s\n", *tokens);
