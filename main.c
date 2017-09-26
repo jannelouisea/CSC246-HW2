@@ -19,6 +19,7 @@
 char ** parseLine(char * line) {
     // use example from internet but without the extra stuff
     // make sure to check for space skips
+    printf("%s", line);
 
     char * delim = " \n";
     size_t count = 0;
@@ -31,7 +32,7 @@ char ** parseLine(char * line) {
         }
         tmp++;
     }
-    // printf("Count: %d\n", count);
+    printf("Count: %d\n", count);
 
     result = malloc(sizeof(char *) * count);
 
@@ -44,9 +45,11 @@ char ** parseLine(char * line) {
             *(result + idx) = strdup(token);
             *(result + idx) = strdup(token);
             *(result + idx) = strdup(token);
+            printf("%s-", *(result + idx));
             idx++;
             token = strtok(0, delim);
         }
+        printf("\n");
         assert(idx == count);
         *(result + idx) = 0;
     }
@@ -77,38 +80,50 @@ int main(int argc, char * argv[]) {
     char * line = NULL;
     size_t len = 0;
     while (getline(&line, &len, fp) != -1) {
-        printf("%s", line);
+        // printf("%s", line);
         char ** tokens = parseLine(line);
         tokens += 2;
+        printf("First mem: %s\n", *tokens);
         while (*tokens) {
+            // printf("%s+", *tokens);
             // strdup token to paTable
-            *(paTable + paTableIdx++) = strdup(*tokens);
-            // paTableIdx++;
+            *(paTable + paTableIdx) = strdup(*tokens);
+            // *(paTable + paTableIdx) = strdup(*tokens);
+            // *(paTable + paTableIdx) = strdup(*tokens);
+            // *(paTable + paTableIdx) = malloc(sizeof(char) * 3);
+            // strncpy(*(paTable + paTableIdx), *tokens, 3);
+            // *(paTable + paTableIdx)[2] = '\0';
+            printf("%s-", *(paTable + paTableIdx));
+            paTableIdx++;
             tokens++;
         }
+        printf("\n");
     }
     assert(paTableIdx == NUM_OF_ENTRIES * NUM_OF_PAGES);
 
-    fclose(fp);
-
     /*
-    size_t patidx = 0;
-    while (*paTable) {
-        if ((patidx % NUM_OF_ENTRIES) == 0) {
+    size_t i = 0;
+    char ** tempp = paTable;
+    while (*tempp) {
+        if (i % NUM_OF_ENTRIES == 0) {
             printf("\n");
         }
-        printf("%s ", *(paTable + patidx));
-        patidx++;
-        paTable++;
+        printf("%s ", *tempp);
+        i++;
+        tempp++;
     }
-    */
+     */
 
-    // assert that the number of index equals
+    fclose(fp);
 
-    // get the base register
+    /* Get the page directory base register */
+    int pdbr = (int) strtol(argv[PDBR_IDX], NULL, 10);
+    // Checl if it translated correctly?
+    assert(pdbr < NUM_OF_PAGES);
+
+    // turn virtual address into an integer
 
     // translate the virtual address to components
-    // turn virtual address into an integer
 
     // use masks and right shift
 
