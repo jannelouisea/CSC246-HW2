@@ -90,11 +90,18 @@ int main(int argc, char * argv[]) {
     assert(paTableIdx == NUM_OF_ENTRIES * NUM_OF_PAGES);
 
     fclose(fp);
-    // while getc to get file in each line
-    // get an array of tokens...
-    // skip the next two tokens
 
-    // strdup to paTable
+    /*
+    size_t patidx = 0;
+    while (*paTable) {
+        if ((patidx % NUM_OF_ENTRIES) == 0) {
+            printf("\n");
+        }
+        printf("%s ", *(paTable + patidx));
+        patidx++;
+        paTable++;
+    }
+    */
 
     // assert that the number of index equals
 
