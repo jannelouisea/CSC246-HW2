@@ -87,7 +87,7 @@ char ** parseLine(char * line) {
 int main(int argc, char * argv[]) {
     // Check number of arguments
     if (argc != 4) {
-        printf("ERROR: Incorrect usage.\nUsage: ./p4 <filepath> <pdbr> <virtual adress>");
+        printf("ERROR: Incorrect usage.\nUsage: ./p4 <filepath> <pdbr> <virtual address>\n");
         return INCORRECT_USAGE;
     }
 
@@ -151,7 +151,7 @@ int main(int argc, char * argv[]) {
     int ptPFN = getPFN(pde);
     if (ptPFN == INVALID_ENTRY) {
         printf("    --> Fault (page directory entry not valid)\n");
-        exit(INVALID_PDE);
+        return INVALID_PDE;
     }
     printf("    --> pde index:0x%x [decimal %d] pde contents:0x%s (valid %d, pfn 0x%02x [decimal %d])\n",
            pdi, pdi, pde, 1, ptPFN, ptPFN);
@@ -161,11 +161,15 @@ int main(int argc, char * argv[]) {
     int pePFN = getPFN(pte);
     if (pePFN == INVALID_ENTRY) {
         printf("        --> Fault (page table entry not valid)\n");
-        exit(INVALID_PTE);
+        return INVALID_PTE;
     }
     printf("        --> pde index:0x%x [decimal %d] pde contents:0x%s (valid %d, pfn 0x%02x [decimal %d])\n",
            pti, pti, pte, 1, pePFN, pePFN);
 
+    /* Get PA and value */
+    int paDec = (pePFN * NUM_OF_ENTRIES) + offset;
+    char * pa = *(tmp + paDec);
+    printf("            --> Translates to Physical Address 0x%03x --> Value: %s\n", paDec, pa);
 
-
+    return 0;
 }
