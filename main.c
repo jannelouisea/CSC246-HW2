@@ -17,52 +17,29 @@
 #define NUM_OF_PAGES 128
 #define NUM_OF_ENTRIES 32
 
-/*
-void lineAnalyzer(char * line) {
-    char * tmp = line;
-    size_t valueStart = 0;
-    size_t i = 0;
-    while (*tmp) {
-        printf("%c", *tmp);
-        if (*tmp == ':') {
-            valueStart = i + 2;
-        }
-        i++;
-        tmp++;
-    }
-
-    tmp = line + 10;
-    int count = 0;
-    while (*tmp) {
-        if (isspace(*tmp)) {
-            count++;
-        }
-        tmp++;
-    }
-
-    printf("Count: %d\n", count);
-    printf("Value start: %d\n", valueStart);
+int getComponentsFromVA(int va, int mask, int shiftR) {
+    return (va & mask) >> shiftR;
 }
- */
+
+int convertHexToDec(char * va) {
+    return (va[0] == '0' && va[1] == 'x') ? (int) strtol(va, NULL, 0) : (int) strtol(va, NULL, 16);
+}
 
 char ** parseLine(char * line) {
-    printf("%s", line);
+    // printf("%s", line);
 
-    // char * delim = " \n";
     char * delim = " \n";
     int count = 0;
     char * tmp = line;
     char ** result = 0;
 
     while (*tmp) {
-        // printf("%c", *tmp);
-        // if (*tmp == ' ' && *(tmp + 1) != ' ') {
-        if (isspace(*tmp) && !isspace(*(tmp + 1)) ) {
+        if ((isspace(*tmp) && !isspace(*(tmp + 1))) || strcmp(tmp, delim) == 1) { // account for new line?
             count++;
         }
         tmp++;
     }
-    printf("Count: %d\n", count);
+    // printf("Count: %d\n", count);
 
     result = malloc(sizeof(char *) * count);
 
@@ -75,11 +52,11 @@ char ** parseLine(char * line) {
             assert(idx < count);
             *(result + idx) = malloc(strlen(token) + 1);
             strcpy(*(result + idx), token);
-            printf("%s-", *(result + idx));
+            // printf("%s-", *(result + idx));
             idx++;
             token = strtok(0, delim);
         }
-        printf("\n");
+        // printf("\n");
         assert(idx == count);
         *(result + idx) = 0;
     }
@@ -110,16 +87,11 @@ int main(int argc, char * argv[]) {
     int lineLen = 108;
     char line[108];
     while(fgets(line, sizeof(line), fp) != NULL) {
-    // char * line = NULL;
-    // size_t len = 0;
-    // while (getline(&line, &len, fp) != -1) {
-        // printf("%s", line);
-        // lineAnalyzer(line);
         char ** tokens = parseLine(line);
         tokens += 2;
-        // printf("First mem: %s\n", *tokens);
         while (*tokens) {
-            *(paTable + paTableIdx) = malloc(strlen(*tokens) + 1);
+            *(paTable + paTableIdx) = malloc(sizeof(char) * 3);
+            // *(paTable + paTableIdx) = malloc(strlen(*tokens) + 1);
             strcpy(*(paTable + paTableIdx), *tokens);
             // printf("%s-", *(paTable + paTableIdx));
             paTableIdx++;
@@ -129,40 +101,31 @@ int main(int argc, char * argv[]) {
     }
     assert(paTableIdx == NUM_OF_ENTRIES * NUM_OF_PAGES);
 
-    size_t i = 0;
+    // Printing out the table
     /*
-    char ** tempp = paTable;
-    while (*tempp) {
-        if (i % NUM_OF_ENTRIES == 0) {
-            printf("\n");
-        }
-        printf("%s ", *tempp);
-        i++;
-        tempp++;
-    }
-     */
-    while (i < NUM_OF_ENTRIES * NUM_OF_PAGES) {
+    size_t i = 0;
+    while (i < (NUM_OF_ENTRIES * NUM_OF_PAGES)) {
         if (i % NUM_OF_ENTRIES == 0) {
             printf("\n");
         }
         printf("%s ", *(paTable + i));
         i++;
     }
+    */
 
     fclose(fp);
 
     /* Get the page directory base register */
     int pdbr = (int) strtol(argv[PDBR_IDX], NULL, 10);
-    // Checl if it translated correctly?
     assert(pdbr < NUM_OF_PAGES);
 
-    // turn virtual address into an integer
+    int vaDec = convertHexToDec(argv[VA_IDX]);
+    int pdi = getComponentsFromVA(vaDec, 31744, 10);
+    int pti = getComponentsFromVA(vaDec, 992, 5);
+    int offset = getComponentsFromVA(vaDec, 31, 0);
 
-    // translate the virtual address to components
-
-    // use masks and right shift
-
-    // validBit mask 128
-    // pfn mask 127
+    /* Get PDE */
+    char ** tmp = paTable;
+    char * pde = *(tmp + (pdbr * NUM_OF_PAGES) + pdi);
 
 }
