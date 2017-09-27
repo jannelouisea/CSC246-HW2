@@ -7,6 +7,9 @@
 /* Error status */
 #define INCORRECT_USAGE -1
 #define UNABLE_TO_OPEN_FILE -2
+#define INVALID_ENTRY -70
+#define INVALID_PDE -80
+#define INVALID_PTE -90
 
 /* Argument indexes */
 #define FILEPATH_IDX 1
@@ -16,13 +19,30 @@
 /* Global constants */
 #define NUM_OF_PAGES 128
 #define NUM_OF_ENTRIES 32
+#define VALID_BIT_MASK 128
+#define PFN_MASK 127
+
+int getPFN(char * entry) {
+    int entryDec = (int) strtol(entry, NULL, 16);
+    int validBit = entryDec & VALID_BIT_MASK;
+    if (validBit) {
+        return entryDec & PFN_MASK;
+    } else {
+        return INVALID_ENTRY;
+    }
+}
 
 int getComponentsFromVA(int va, int mask, int shiftR) {
     return (va & mask) >> shiftR;
 }
 
 int convertHexToDec(char * va) {
-    return (va[0] == '0' && va[1] == 'x') ? (int) strtol(va, NULL, 0) : (int) strtol(va, NULL, 16);
+    if (va[0] == '0' && va[1] == 'x') {
+        return (int) strtol(va, NULL, 0);
+    } else {
+        return (int) strtol(va, NULL, 16);
+    };
+    // return (va[0] == '0' && va[1] == 'x') ? (int) strtol(va, NULL, 0) : (int) strtol(va, NULL, 16);
 }
 
 char ** parseLine(char * line) {
@@ -120,12 +140,32 @@ int main(int argc, char * argv[]) {
     assert(pdbr < NUM_OF_PAGES);
 
     int vaDec = convertHexToDec(argv[VA_IDX]);
+    printf("Virtual Address %04x\n", vaDec);
     int pdi = getComponentsFromVA(vaDec, 31744, 10);
     int pti = getComponentsFromVA(vaDec, 992, 5);
     int offset = getComponentsFromVA(vaDec, 31, 0);
 
     /* Get PDE */
     char ** tmp = paTable;
-    char * pde = *(tmp + (pdbr * NUM_OF_PAGES) + pdi);
+    char * pde = *(tmp + (pdbr * NUM_OF_ENTRIES) + pdi);
+    int ptPFN = getPFN(pde);
+    if (ptPFN == INVALID_ENTRY) {
+        printf("    --> Fault (page directory entry not valid)\n");
+        exit(INVALID_PDE);
+    }
+    printf("    --> pde index:0x%x [decimal %d] pde contents:0x%s (valid %d, pfn 0x%02x [decimal %d])\n",
+           pdi, pdi, pde, 1, ptPFN, ptPFN);
+
+    /* Get PTE */
+    char * pte = *(tmp + (ptPFN * NUM_OF_ENTRIES) + pti);
+    int pePFN = getPFN(pte);
+    if (pePFN == INVALID_ENTRY) {
+        printf("        --> Fault (page table entry not valid)\n");
+        exit(INVALID_PTE);
+    }
+    printf("        --> pde index:0x%x [decimal %d] pde contents:0x%s (valid %d, pfn 0x%02x [decimal %d])\n",
+           pti, pti, pte, 1, pePFN, pePFN);
+
+
 
 }
